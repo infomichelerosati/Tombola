@@ -18,49 +18,60 @@
         body {
             height: 100vh;
             overflow: hidden; /* Blocca lo scroll */
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            height: 80px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
         }
 
         .board-container {
             display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 15px;
-            padding: 10px 20px 20px 20px;
-            height: calc(100vh - 80px); /* Sottrae l'header */
-            box-sizing: border-box;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            padding: 0 20px 20px 20px;
+            flex-grow: 1;
+            min-height: 0; /* Importante per flex child overflow */
         }
 
         .numbers-grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(9, 1fr); /* Forza 9 righe */
-            gap: 8px;
+            grid-template-rows: repeat(9, 1fr);
+            gap: 1vh;
             background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
+            padding: 1.5vh;
             border-radius: 15px;
-            height: 100%; /* Occupa tutto lo spazio del container */
+            height: 100%;
         }
 
         .number-cell {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(1rem, 3vh, 2rem); /* Font fluido in base all'altezza */
+            font-size: 3.5vh; /* Font gigante per TV */
             font-weight: 800;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            color: var(--text-muted);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.2);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            height: 100%;
         }
 
         .number-cell.extracted {
             background: var(--accent-gold);
             color: var(--bg-dark);
             border-color: #fff;
-            transform: scale(1.02);
-            animation: numberPop 0.5s ease-out;
-            box-shadow: 0 0 15px var(--accent-gold);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
         }
 
         /* Sidebar / Controls */

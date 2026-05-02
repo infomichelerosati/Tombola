@@ -97,16 +97,36 @@ async function extractNumber() {
 
 function speakNumber(n) {
     if ('speechSynthesis' in window) {
+        // Sblocca audio se necessario (alcune TV richiedono un trigger vuoto)
+        if (!window.audioUnlocked) {
+            const silent = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(silent);
+            window.audioUnlocked = true;
+        }
+
         // Suona il "Bum Bum" prima di parlare
         playBumBum(() => {
             const msg = new SpeechSynthesisUtterance();
             msg.text = n.toString();
+            
+            // Cerchiamo una voce italiana disponibile
+            const voices = window.speechSynthesis.getVoices();
+            const itVoice = voices.find(v => v.lang.startsWith('it'));
+            if (itVoice) msg.voice = itVoice;
+            
             msg.lang = 'it-IT';
-            msg.rate = 0.9;
+            msg.rate = 0.85; // Ancora più lento per Smart TV (che a volte accelerano)
             msg.pitch = 1;
             window.speechSynthesis.speak(msg);
         });
     }
+}
+
+// Pre-caricamento voci per Smart TV
+if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
 }
 
 function playBumBum(callback) {
@@ -285,6 +305,9 @@ onSnapshot(collection(db, "tombola_premium", roomId, "sales"), (querySnapshot) =
 
 // Avvio Partita
 btnStartGame.addEventListener('click', async () => {
+    // Sblocca Full Screen automaticamente al primo click utile
+    if (!document.fullscreenElement) toggleFullScreen();
+    
     try {
         await updateDoc(gameDocRef, { status: 'PLAYING' });
     } catch (e) {
