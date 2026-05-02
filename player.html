@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Tua Cartella | Tombola Online Premium</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        .player-container {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+        }
+
+        /* Bingo Card Styling */
+        .bingo-card {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            background: #444;
+            padding: 5px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--accent-gold);
+            margin-bottom: 20px;
+        }
+
+        .bingo-cell {
+            aspect-ratio: 1;
+            background: #fff;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .bingo-cell.empty {
+            background: #eee;
+            cursor: default;
+        }
+
+        .bingo-cell.marked {
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .bingo-cell.marked::after {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            border: 2px solid var(--bg-dark);
+            border-radius: 50%;
+        }
+
+        /* Controls */
+        .player-controls {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .win-btn {
+            flex: 0 0 auto;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .win-btn.active {
+            background: var(--success);
+            border-color: #fff;
+        }
+
+        .auto-check-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Overlay Acquisto Iniziale -->
+    <div id="purchase-overlay" class="glass" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; transition: opacity 0.3s ease;">
+        <h2 class="title-main" style="font-size: 2rem; margin-bottom: 10px;">Benvenuto!</h2>
+        
+        <div style="width: 100%; max-width: 300px; margin-bottom: 20px;">
+            <p style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem;">Dati Giocatore:</p>
+            <input type="text" id="player-name-input" placeholder="Tuo Nome" class="glass" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; text-align: center; font-size: 1.1rem; outline: none; margin-bottom: 15px;">
+            <input type="number" id="room-id-input" placeholder="Codice Stanza (4 cifre)" class="glass" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--accent-gold); background: rgba(255,255,255,0.05); color: white; text-align: center; font-size: 1.1rem; outline: none;">
+        </div>
+
+        <p style="margin-bottom: 15px; color: var(--text-muted); font-size: 0.9rem;">Quante cartelle desideri?</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 300px;">
+            <button class="btn glass buy-option" onclick="selectPurchase(1)">1</button>
+            <button class="btn glass buy-option" onclick="selectPurchase(2)">2</button>
+            <button class="btn glass buy-option" onclick="selectPurchase(3)">3</button>
+            <button class="btn glass buy-option" onclick="selectPurchase(4)">4</button>
+            <button class="btn glass buy-option" onclick="selectPurchase(5)">5</button>
+            <button class="btn glass buy-option" onclick="selectPurchase(6)">6</button>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <div id="total-cost-display" style="font-size: 1.5rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 10px;">Totale: € 0.00</div>
+            <button id="btn-confirm-purchase" class="btn btn-primary" style="padding: 15px 40px; display: none;">Conferma e Gioca</button>
+        </div>
+    </div>
+
+    <header class="container" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="title-main" style="margin: 10px 0; font-size: 1.2rem;">LE TUE CARTELLE</h1>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="player-id-tag" style="font-size: 0.7rem; color: var(--text-muted);">ID: --</div>
+            <button onclick="logoutPlayer()" class="btn glass" style="padding: 5px 10px; font-size: 0.6rem; color: var(--danger); border-color: rgba(255,0,0,0.2);">ESCI</button>
+        </div>
+    </header>
+
+    <div class="player-container">
+        <!-- Barra info -->
+        <div class="glass stats-bar" style="display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 10px;">
+            <div>
+                <span style="color: var(--text-muted); font-size: 0.7rem;">Ultimo:</span>
+                <div id="last-number-mobile" style="font-size: 1.3rem; font-weight: 800; color: var(--accent-gold);">--</div>
+            </div>
+            <div style="text-align: center;">
+                <span style="color: var(--text-muted); font-size: 0.7rem;">Totale:</span>
+                <div style="font-size: 1.1rem; font-weight: 800;">€ <span id="total-pot">0.00</span></div>
+            </div>
+            <div style="text-align: right; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 10px;">
+                <span style="color: var(--text-muted); font-size: 0.7rem;">Vinte da Te:</span>
+                <div id="player-winnings-display" style="font-size: 1.2rem; font-weight: 800; color: var(--success);">€ 0.00</div>
+            </div>
+        </div>
+
+        <!-- Controlli Vincita -->
+        <div class="player-controls">
+            <button class="win-btn" onclick="declareWin('ambo')">AMBO</button>
+            <button class="win-btn" onclick="declareWin('terno')">TERNO</button>
+            <button class="win-btn" onclick="declareWin('quaderna')">QUADERNA</button>
+            <button class="win-btn" onclick="declareWin('cinquina')">CINQUINA</button>
+            <button class="win-btn" onclick="declareWin('tombola')">TOMBOLA</button>
+        </div>
+
+        <div class="auto-check-toggle">
+            <input type="checkbox" id="auto-check" checked>
+            <label for="auto-check" style="font-size: 0.9rem;">Auto-Check (Segna automaticamente)</label>
+        </div>
+
+        <!-- Area Cartelle -->
+        <div id="cards-area">
+            <!-- Le cartelle verranno inserite qui -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Modale Personalizzata Versatile -->
+    <div id="custom-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; padding: 20px;">
+        <div class="glass" style="max-width: 400px; width: 100%; padding: 30px; text-align: center; border-radius: 20px; border: 1px solid var(--accent-gold); animation: popIn 0.3s ease-out;">
+            <div id="modal-icon-container" style="margin-bottom: 15px;"><i class="fas fa-info-circle" style="font-size: 2.5rem; color: var(--accent-gold);"></i></div>
+            <h3 id="modal-title" class="title-main" style="font-size: 1.5rem; margin-bottom: 10px;">Avviso</h3>
+            <p id="modal-message" style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.95rem;"></p>
+            
+            <input type="text" id="modal-input" class="glass" style="display: none; width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 10px; border: 1px solid var(--accent-gold); background: rgba(0,0,0,0.2); color: white; text-align: center; font-size: 1rem;">
+
+            <div id="modal-buttons" style="display: flex; gap: 10px;">
+                <button id="modal-btn-confirm" class="btn" style="flex: 1; background: var(--accent-gold); color: var(--bg-dark); font-weight: bold;">OK</button>
+                <button id="modal-btn-cancel" class="btn glass" style="display: none; flex: 1; font-weight: bold; color: #fff;">ANNULLA</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/player.js"></script>
+</body>
+</html>

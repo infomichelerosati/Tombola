@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tombola Online Premium | Benvenuto</title>
+    <meta name="description" content="Gioca alla Tombola Online con amici e famiglia. Gestisci il cartellone o partecipa come giocatore dal tuo smartphone.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <div class="container landing-hero">
+        <h1 class="title-main">TOMBOLA ONLINE</h1>
+        <p style="text-align: center; color: var(--text-muted); max-width: 600px;">
+            La tradizione incontra la tecnologia. Scegli il tuo ruolo e inizia la partita in tempo reale.
+        </p>
+
+        <div class="role-selector">
+            <!-- Gestore / Cartellone -->
+            <div class="glass role-card" onclick="window.location.href='board.html'">
+                <i class="fas fa-tv"></i>
+                <h2>Cartellone</h2>
+                <p>Apri questa modalità su una Smart TV o PC per gestire l'estrazione e visualizzare il tabellone principale.</p>
+                <button class="btn btn-primary" style="margin-top: 20px;">Apri Tabellone</button>
+            </div>
+
+            <!-- Giocatore -->
+            <div class="glass role-card" onclick="window.location.href='player.html'">
+                <i class="fas fa-mobile-alt"></i>
+                <h2>Giocatore</h2>
+                <p>Partecipa alla partita dal tuo smartphone. Acquista le cartelle e segna i numeri man mano che escono.</p>
+                <button class="btn btn-primary" style="margin-top: 20px;">Entra in Gioco</button>
+            </div>
+        </div>
+
+        <footer style="margin-top: 50px; color: var(--text-muted); font-size: 0.8rem;">
+            &copy; 2026 Tombola Online Premium - Realizzato con Passione
+        </footer>
+    </div>
+
+</body>
+</html>

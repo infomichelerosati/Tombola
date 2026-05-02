@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartellone | Tombola Online Premium</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        /* Specific Board Layout - Full Screen Fix */
+        body {
+            height: 100vh;
+            overflow: hidden; /* Blocca lo scroll */
+        }
+
+        .board-container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 15px;
+            padding: 10px 20px 20px 20px;
+            height: calc(100vh - 80px); /* Sottrae l'header */
+            box-sizing: border-box;
+        }
+
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(9, 1fr); /* Forza 9 righe */
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 15px;
+            height: 100%; /* Occupa tutto lo spazio del container */
+        }
+
+        .number-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 3vh, 2rem); /* Font fluido in base all'altezza */
+            font-weight: 800;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+        }
+
+        .number-cell.extracted {
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+            border-color: #fff;
+            transform: scale(1.02);
+            animation: numberPop 0.5s ease-out;
+            box-shadow: 0 0 15px var(--accent-gold);
+        }
+
+        /* Sidebar / Controls */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+        }
+
+        .current-number-display {
+            flex: 0 0 180px; /* Altezza fissa per il numero gigante */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            text-shadow: 0 0 30px rgba(251, 192, 45, 0.5);
+        }
+
+        .prize-list {
+            flex-grow: 1;
+            padding: 15px;
+        }
+
+        .prize-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid var(--glass-border);
+            font-weight: 600;
+        }
+
+        .prize-item.won {
+            color: var(--text-muted);
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .admin-controls {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .board-container { grid-template-columns: 1fr; }
+            .sidebar { flex-direction: row; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <h1 class="title-main" style="margin: 0; font-size: 2.5rem;">TOMBOLA <span style="color: var(--accent-gold);">PREMIUM</span></h1>
+            <div class="glass" style="padding: 10px 20px; border: 1px solid var(--accent-gold);">
+                <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">CODICE STANZA</span>
+                <span id="room-id-display" style="font-size: 1.8rem; font-weight: 800; letter-spacing: 2px;">----</span>
+            </div>
+            <button onclick="shareWhatsApp()" class="btn glass" style="border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; color: #25D366; border-color: #25D366;">
+                <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i>
+            </button>
+        </div>
+        <div id="connection-status" style="font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 15px;">
+            <button onclick="toggleFullScreen()" class="btn glass" style="padding: 5px 10px; font-size: 0.7rem; border-color: rgba(255,255,255,0.2);">
+                <i class="fas fa-expand"></i> FULL SCREEN
+            </button>
+            <span><i class="fas fa-circle" style="color: var(--warning);"></i> Connessione...</span>
+        </div>
+    </header>
+
+    <!-- Overlay Lobby Iscrizioni -->
+    <div id="lobby-overlay" class="glass" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); background: rgba(0,0,0,0.7);">
+        <div class="glass" style="max-width: 600px; width: 90%; padding: 40px; text-align: center; border: 1px solid var(--accent-gold);">
+            <h2 class="title-main" style="font-size: 2.5rem; margin-bottom: 10px;">Lobby Iscrizioni</h2>
+            
+            <div style="margin: 30px 0; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 15px; border: 1px dashed var(--accent-gold);">
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">CODICE DA COMUNICARE:</p>
+                <div id="lobby-room-id" style="font-size: 4rem; font-weight: 800; color: var(--accent-gold); letter-spacing: 10px; text-shadow: 0 0 20px rgba(212, 175, 55, 0.5); margin-bottom: 15px;">----</div>
+                <button onclick="shareWhatsApp()" class="btn glass" style="width: 100%; border-color: #25D366; color: #25D366; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600;">
+                    <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i> CONDIVIDI INVITO
+                </button>
+            </div>
+
+            <p style="color: var(--text-muted); margin-bottom: 20px;">I giocatori appariranno qui sotto appena si collegano:</p>
+            
+            <div id="lobby-players-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-bottom: 40px; max-height: 300px; overflow-y: auto; padding: 10px;">
+                <!-- Giocatori inseriti dinamicamente -->
+                <div style="color: var(--text-muted); grid-column: 1/-1;">In attesa di giocatori...</div>
+            </div>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;">
+                <div id="lobby-stats" style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 600;">
+                    Giocatori: <span id="lobby-count" style="color: var(--accent-gold);">0</span> | 
+                    Montepremi: <span id="lobby-pot" style="color: var(--success);">€ 0.00</span>
+                </div>
+                <button id="btn-start-game" class="btn btn-primary" style="padding: 15px 50px; font-size: 1.2rem;" disabled>CHIUDI ISCRIZIONI E INIZIA</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="board-container">
+        <!-- Tabellone Numeri -->
+        <div class="numbers-grid" id="main-grid">
+            <!-- Numeri generati da JS -->
+        </div>
+
+        <!-- Sidebar Controlli -->
+        <div class="sidebar">
+            <div class="glass current-number-display" id="last-number">
+                --
+            </div>
+
+            <div class="glass prize-list">
+                <h3 style="margin-bottom: 15px; color: var(--accent-gold);">Premi in Palio</h3>
+                <div class="prize-item" id="prize-ambo"><span>Ambo</span> <span class="val">€ 0.00</span></div>
+                <div class="prize-item" id="prize-terno"><span>Terno</span> <span class="val">€ 0.00</span></div>
+                <div class="prize-item" id="prize-quaderna"><span>Quaderna</span> <span class="val">€ 0.00</span></div>
+                <div class="prize-item" id="prize-cinquina"><span>Cinquina</span> <span class="val">€ 0.00</span></div>
+                <div class="prize-item" id="prize-tombola"><span>Tombola</span> <span class="val">€ 0.00</span></div>
+            </div>
+
+            <div class="glass controls-panel">
+                <button id="btn-extract" class="btn btn-primary" style="flex: 1; padding: 20px; font-size: 1.5rem;">ESTRAI NUMERO</button>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px; min-width: 150px;">
+                    <label class="glass" style="display: flex; align-items: center; gap: 10px; padding: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);">
+                        <input type="checkbox" id="auto-extract-toggle" style="width: 20px; height: 20px; accent-color: var(--accent-gold);">
+                        <span style="font-size: 0.8rem; font-weight: 600;">AUTO (10s)</span>
+                    </label>
+                    <button id="btn-reset" class="btn glass" style="color: var(--danger); border-color: var(--danger); font-size: 0.8rem;">RESET PARTITA</button>
+                </div>
+            </div>
+    <div style="margin-top: 10px; font-size: 0.8rem; text-align: center; color: var(--text-muted);">
+                    Prezzo Cartella: <span id="card-price-display">€ 1.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Modale Personalizzata Versatile -->
+    <div id="custom-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; padding: 20px;">
+        <div class="glass" style="max-width: 500px; width: 100%; padding: 40px; text-align: center; border-radius: 20px; border: 2px solid var(--accent-gold); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            <div id="modal-icon-container" style="margin-bottom: 20px;"><i class="fas fa-info-circle" style="font-size: 3rem; color: var(--accent-gold);"></i></div>
+            <h3 id="modal-title" class="title-main" style="font-size: 2rem; margin-bottom: 15px;">Avviso</h3>
+            <p id="modal-message" style="margin-bottom: 25px; color: #fff; font-size: 1.1rem;"></p>
+            
+            <!-- Campo Input (opzionale, nascosto di default) -->
+            <input type="text" id="modal-input" class="glass" style="display: none; width: 100%; padding: 12px; margin-bottom: 25px; border-radius: 12px; border: 1px solid var(--accent-gold); background: rgba(0,0,0,0.2); color: white; text-align: center; font-size: 1.2rem;">
+
+            <div id="modal-buttons" style="display: flex; gap: 15px;">
+                <button id="modal-btn-confirm" class="btn" style="flex: 1; background: var(--accent-gold); color: var(--bg-dark); font-weight: bold;">OK</button>
+                <button id="modal-btn-cancel" class="btn glass" style="display: none; flex: 1; font-weight: bold; color: #fff;">ANNULLA</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/board.js"></script>
+</body>
+</html>

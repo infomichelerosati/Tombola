@@ -1,0 +1,191 @@
+:root {
+    /* Color Palette - Premium Tombola */
+    --bg-dark: #0f0c29;
+    --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    --accent-gold: #fbc02d;
+    --accent-gold-light: #fff176;
+    --text-light: #ffffff;
+    --text-muted: #b0b0b0;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    /* UI States */
+    --success: #4caf50;
+    --danger: #f44336;
+    --info: #2196f3;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    color: var(--text-light);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Glassmorphism Utility */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--card-shadow);
+    border-radius: 20px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGold {
+    0% { box-shadow: 0 0 0 0 rgba(251, 192, 45, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(251, 192, 45, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(251, 192, 45, 0); }
+}
+
+@keyframes numberPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes verifyPulse {
+    0% { background: var(--accent-gold); box-shadow: 0 0 50px var(--accent-gold); transform: scale(1.1); }
+    50% { background: #fff; box-shadow: 0 0 80px #fff; transform: scale(1.2); }
+    100% { background: var(--accent-gold); box-shadow: 0 0 50px var(--accent-gold); transform: scale(1.1); }
+}
+
+@keyframes scanningPulse {
+    0% { background: rgba(255, 255, 255, 0.4); transform: scale(1.05); }
+    50% { background: var(--info); transform: scale(1.1); }
+    100% { background: rgba(255, 255, 255, 0.4); transform: scale(1.05); }
+}
+
+.scanning-all {
+    animation: scanningPulse 0.4s infinite !important;
+    z-index: 500 !important;
+}
+
+.verifying-number {
+    animation: verifyPulse 1s infinite !important;
+    z-index: 1000 !important;
+    position: relative;
+    border: 2px solid white !important;
+}
+
+.dimmed {
+    opacity: 0.3;
+    filter: blur(2px);
+}
+
+/* Shared UI Components */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background: var(--accent-gold);
+    color: var(--bg-dark);
+}
+
+.btn-primary:hover {
+    background: var(--accent-gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(251, 192, 45, 0.4);
+}
+
+.title-main {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(to right, var(--accent-gold), #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    margin: 20px 0;
+    letter-spacing: 2px;
+}
+
+/* Layouts */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    width: 100%;
+}
+
+/* Landing Page Specific */
+.landing-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    animation: fadeIn 1s ease-out;
+}
+
+.role-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    width: 100%;
+    max-width: 800px;
+    margin-top: 40px;
+}
+
+.role-card {
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.role-card:hover {
+    transform: scale(1.05);
+    border-color: var(--accent-gold);
+}
+
+.role-card i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: var(--accent-gold);
+}
+
+.role-card h2 {
+    margin-bottom: 15px;
+}
+
+.role-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .title-main { font-size: 2rem; }
+    .role-selector { grid-template-columns: 1fr; }
+}
