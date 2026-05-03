@@ -17,6 +17,7 @@
         /* Specific Board Layout - Full Screen Fix */
         body {
             height: 100vh;
+            margin: 0;
             overflow: hidden; /* Blocca lo scroll */
             background-color: var(--bg-dark);
             color: var(--text-main);
@@ -25,53 +26,58 @@
         }
 
         header {
-            height: 80px;
+            height: 70px; /* Ridotto leggermente */
             padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         .board-container {
             display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 20px;
-            padding: 0 20px 20px 20px;
-            flex-grow: 1;
-            min-height: 0; /* Importante per flex child overflow */
+            grid-template-columns: 1fr 380px;
+            gap: 15px;
+            padding: 15px;
+            flex: 1;
+            min-height: 0; /* Fondamentale per il contenimento flex */
+            overflow: hidden;
         }
 
         .numbers-grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
             grid-template-rows: repeat(9, 1fr);
-            gap: 1vh;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1.5vh;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
             border-radius: 15px;
             height: 100%;
+            width: 100%;
         }
 
         .number-cell {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3.5vh; /* Font gigante per TV */
+            font-size: clamp(1rem, 4vh, 2.5rem); /* Adattivo e sicuro */
             font-weight: 800;
             background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            color: rgba(255,255,255,0.2);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.15);
+            transition: all 0.3s ease;
+            aspect-ratio: 1 / 1; /* Mantiene i quadrati se possibile */
         }
 
         .number-cell.extracted {
             background: var(--accent-gold);
             color: var(--bg-dark);
             border-color: #fff;
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
         }
 
         /* Sidebar / Controls */
@@ -80,30 +86,35 @@
             flex-direction: column;
             gap: 15px;
             height: 100%;
+            min-height: 0;
         }
 
         .current-number-display {
-            flex: 0 0 180px; /* Altezza fissa per il numero gigante */
+            flex: 0 0 160px; /* Leggermente più piccolo */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8rem;
+            font-size: 7rem;
             font-weight: 900;
             color: var(--accent-gold);
-            text-shadow: 0 0 30px rgba(251, 192, 45, 0.5);
+            text-shadow: 0 0 25px rgba(251, 192, 45, 0.4);
+            border-radius: 20px;
         }
 
         .prize-list {
-            flex-grow: 1;
+            flex: 1;
             padding: 15px;
+            overflow-y: auto;
+            min-height: 0;
         }
 
         .prize-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
+            padding: 8px 0;
             border-bottom: 1px solid var(--glass-border);
             font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .prize-item.won {
@@ -112,16 +123,23 @@
             opacity: 0.6;
         }
 
-        .admin-controls {
-            padding: 20px;
+        .controls-panel {
+            padding: 15px;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            flex-shrink: 0;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-height: 800px) {
+            header { height: 60px; }
+            .current-number-display { flex-basis: 120px; font-size: 5rem; }
+            .number-cell { font-size: 3.5vh; }
+        }
+
+        @media (max-width: 1200px) {
             .board-container { grid-template-columns: 1fr; }
-            .sidebar { flex-direction: row; }
+            .sidebar { display: none; } /* Su schermi troppo stretti nascondiamo la sidebar per ora o la spostiamo */
         }
     </style>
 </head>

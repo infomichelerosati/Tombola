@@ -35,6 +35,16 @@ let cardPrice = 1.0;
 window.lastWonPrizes = {};
 window.lastTotalPot = 0;
 window.gameOverShown = false;
+window.audioUnlocked = false; // Forza lo stato iniziale
+
+// Pre-caricamento voci migliorato
+if ('speechSynthesis' in window) {
+    const loadVoices = () => {
+        window.speechSynthesis.getVoices();
+    };
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+}
 
 // UI Elements
 const mainGrid = document.getElementById('main-grid');
@@ -97,9 +107,13 @@ async function extractNumber() {
 
 function speakNumber(n) {
     if ('speechSynthesis' in window) {
-        // Sblocca audio se necessario (alcune TV richiedono un trigger vuoto)
+        // Forza lo stop di eventuali code bloccate (comune su TV)
+        window.speechSynthesis.cancel();
+
+        // Sblocca audio se necessario con un'azione più decisa
         if (!window.audioUnlocked) {
-            const silent = new SpeechSynthesisUtterance("");
+            const silent = new SpeechSynthesisUtterance(" ");
+            silent.volume = 0;
             window.speechSynthesis.speak(silent);
             window.audioUnlocked = true;
         }
@@ -109,15 +123,30 @@ function speakNumber(n) {
             const msg = new SpeechSynthesisUtterance();
             msg.text = n.toString();
             
-            // Cerchiamo una voce italiana disponibile
+            // Logica di selezione voce più robusta
             const voices = window.speechSynthesis.getVoices();
-            const itVoice = voices.find(v => v.lang.startsWith('it'));
-            if (itVoice) msg.voice = itVoice;
+            let itVoice = voices.find(v => v.lang.startsWith('it') || v.lang === 'it-IT');
             
-            msg.lang = 'it-IT';
-            msg.rate = 0.85; // Ancora più lento per Smart TV (che a volte accelerano)
+            // Fallback se non trova l'italiano (usa la prima disponibile)
+            if (!itVoice && voices.length > 0) {
+                itVoice = voices.find(v => v.default) || voices[0];
+            }
+            
+            if (itVoice) {
+                msg.voice = itVoice;
+                msg.lang = itVoice.lang;
+            } else {
+                msg.lang = 'it-IT';
+            }
+            
+            msg.rate = 0.8; // Leggermente più lento per chiarezza
             msg.pitch = 1;
-            window.speechSynthesis.speak(msg);
+            msg.volume = 1;
+            
+            // Alcune TV richiedono un timeout per "respirare" dopo l'audio context
+            setTimeout(() => {
+                window.speechSynthesis.speak(msg);
+            }, 100);
         });
     }
 }
@@ -305,9 +334,18 @@ onSnapshot(collection(db, "tombola_premium", roomId, "sales"), (querySnapshot) =
 
 // Avvio Partita
 btnStartGame.addEventListener('click', async () => {
-    // Sblocca Full Screen automaticamente al primo click utile
+    // Sblocca Full Screen
     if (!document.fullscreenElement) toggleFullScreen();
     
+    // SBLOCCO AUDIO AGGRESSIVO (Necessario per Smart TV)
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance("Iniziamo!");
+        msg.volume = 0; // Silenzioso ma attiva il motore
+        window.speechSynthesis.speak(msg);
+        window.audioUnlocked = true;
+    }
+
     try {
         await updateDoc(gameDocRef, { status: 'PLAYING' });
     } catch (e) {
