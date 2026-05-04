@@ -19,6 +19,9 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .stats-bar {
@@ -136,7 +139,7 @@
         </div>
     </div>
 
-    <header class="container" style="display: flex; justify-content: space-between; align-items: center;">
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
         <h1 class="title-main" style="margin: 10px 0; font-size: 1.2rem;">LE TUE CARTELLE</h1>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div id="player-id-tag" style="font-size: 0.7rem; color: var(--text-muted);">ID: --</div>

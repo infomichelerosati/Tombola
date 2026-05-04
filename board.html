@@ -16,13 +16,9 @@
     <style>
         /* Specific Board Layout - Full Screen Fix */
         body {
-            height: 100vh;
-            margin: 0;
-            overflow: hidden; /* Blocca lo scroll */
+            /* Gli stili base sono ora in main.css */
             background-color: var(--bg-dark);
             color: var(--text-main);
-            display: flex;
-            flex-direction: column;
         }
 
         header {
@@ -40,9 +36,9 @@
             display: grid;
             grid-template-columns: 1fr 380px;
             gap: 15px;
-            padding: 15px;
+            padding: 10px 0; /* Padding ridotto perché il body ha già padding di sicurezza */
             flex: 1;
-            min-height: 0; /* Fondamentale per il contenimento flex */
+            min-height: 0; 
             overflow: hidden;
         }
 
@@ -69,7 +65,7 @@
             border-radius: 8px;
             color: rgba(255,255,255,0.15);
             transition: all 0.3s ease;
-            aspect-ratio: 1 / 1; /* Mantiene i quadrati se possibile */
+            /* Rimosso aspect-ratio per evitare overflow verticale su TV wide */
         }
 
         .number-cell.extracted {
@@ -145,7 +141,7 @@
 </head>
 <body>
 
-    <header class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0;">
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
         <div style="display: flex; align-items: center; gap: 20px;">
             <h1 class="title-main" style="margin: 0; font-size: 2.5rem;">TOMBOLA <span style="color: var(--accent-gold);">PREMIUM</span></h1>
             <div class="glass" style="padding: 10px 20px; border: 1px solid var(--accent-gold);">

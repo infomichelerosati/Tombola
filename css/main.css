@@ -23,14 +23,21 @@
     font-family: 'Outfit', sans-serif;
 }
 
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* Blocca lo scroll per evitare tagli su TV */
+    display: flex;
+    flex-direction: column;
+}
+
 body {
     background: var(--bg-gradient);
     background-attachment: fixed;
     color: var(--text-light);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow-x: hidden;
+    padding: 20px 40px; /* Safe Area per Smart TV (Overscan) */
 }
 
 /* Glassmorphism Utility */
